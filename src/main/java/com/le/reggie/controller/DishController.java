@@ -49,6 +49,12 @@ public class DishController {
         return R.success("新增菜品成功");
     }
 
+    @PostMapping("/status/{status}")
+    public R<String> updateStatus(@PathVariable("status") int status,@RequestParam List<Long> ids){
+        dishService.updateStatus(status,ids);
+        return R.success("更新状态成功");
+    }
+
     /**
      * 菜品信息分页查询
      * @param page
@@ -124,6 +130,13 @@ public class DishController {
         dishService.updateWithFlavor(dishDto);
 
         return R.success("修改菜品成功");
+    }
+
+    @DeleteMapping
+    public R<String> delete(@RequestParam List<Long> ids){
+        log.info("ids:{}",ids);
+        dishService.removeWithFlavor(ids);
+        return R.success("删除菜品成功");
     }
 
     /**

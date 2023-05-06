@@ -1,15 +1,19 @@
 package com.le.reggie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.le.reggie.common.CustomException;
 import com.le.reggie.dto.SetmealDto;
+import com.le.reggie.entity.Dish;
+import com.le.reggie.entity.DishFlavor;
 import com.le.reggie.entity.Setmeal;
 import com.le.reggie.entity.SetmealDish;
 import com.le.reggie.mapper.SetmealMapper;
 import com.le.reggie.service.SetmealDishService;
 import com.le.reggie.service.SetmealService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,5 +72,44 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         lambdaQueryWrapper.in(SetmealDish::getSetmealId,ids);
         //删除关系表中的数据----setmeal_dish
         setmealDishService.remove(lambdaQueryWrapper);
+    }
+
+    @Override
+    public SetmealDto getByIdWithDish(long id) {
+        Setmeal setmeal=this.getById(id);
+        SetmealDto setmealDto=new SetmealDto();
+        BeanUtils.copyProperties(setmeal,setmealDto);
+        LambdaQueryWrapper<SetmealDish> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(SetmealDish::getSetmealId,setmeal.getId());
+        List<SetmealDish> list=setmealDishService.list(queryWrapper);
+        setmealDto.setSetmealDishes(list);
+        return setmealDto;
+    }
+
+    @Override
+    @Transactional
+    public void updateWithDish(SetmealDto setmealDto) {
+        this.updateById(setmealDto);
+        LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(SetmealDish::getSetmealId,setmealDto.getId());
+
+        setmealDishService.remove(queryWrapper);
+
+        List<SetmealDish> list=setmealDto.getSetmealDishes();
+        list=list.stream().map((item)->{
+            item.setSetmealId(setmealDto.getId());
+            return item;
+        }).collect(Collectors.toList());
+        setmealDishService.saveBatch(list);
+    }
+
+    @Override
+    @Transactional
+    public void updateStatus(int status, List<Long> ids) {
+        UpdateWrapper<Setmeal> updateWrapper=new UpdateWrapper<>();
+        updateWrapper.in("id",ids);
+        updateWrapper.set("status",status);
+        this.update(null,updateWrapper);
+
     }
 }
