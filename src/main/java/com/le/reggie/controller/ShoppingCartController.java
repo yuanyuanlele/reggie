@@ -1,10 +1,11 @@
 package com.le.reggie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.itheima.reggie.common.BaseContext;
-import com.itheima.reggie.common.R;
-import com.itheima.reggie.entity.ShoppingCart;
-import com.itheima.reggie.service.ShoppingCartService;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.le.reggie.common.BaseContext;
+import com.le.reggie.common.R;
+import com.le.reggie.entity.ShoppingCart;
+import com.le.reggie.service.ShoppingCartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +69,43 @@ public class ShoppingCartController {
         }
 
         return R.success(cartServiceOne);
+    }
+
+    /**
+     * 减少
+     * @param shoppingCart
+     * @return
+     */
+    @PostMapping("/sub")
+    public R<ShoppingCart> delete(@RequestBody ShoppingCart shoppingCart){
+        Long currentId = BaseContext.getCurrentId();
+        shoppingCart.setUserId(currentId);
+
+        Long dishId = shoppingCart.getDishId();
+
+        LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ShoppingCart::getUserId,currentId);
+
+        if(dishId != null){
+            //添加到购物车的是菜品
+            queryWrapper.eq(ShoppingCart::getDishId,dishId);
+
+        }else{
+            //添加到购物车的是套餐
+            queryWrapper.eq(ShoppingCart::getSetmealId,shoppingCart.getSetmealId());
+        }
+
+        ShoppingCart shoppingCart1=shoppingCartService.getOne(queryWrapper);
+        int updateNumber=shoppingCart1.getNumber()-1;
+        if (updateNumber==0){
+            shoppingCartService.remove(queryWrapper);
+            shoppingCart1.setNumber(0);
+        }
+        else {
+            shoppingCart1.setNumber(updateNumber);
+            shoppingCartService.updateById(shoppingCart1);
+        }
+        return R.success(shoppingCart1);
     }
 
     /**

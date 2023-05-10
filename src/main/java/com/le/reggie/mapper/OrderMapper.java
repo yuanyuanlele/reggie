@@ -1,7 +1,7 @@
 package com.le.reggie.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.itheima.reggie.entity.Orders;
+import com.le.reggie.entity.Orders;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

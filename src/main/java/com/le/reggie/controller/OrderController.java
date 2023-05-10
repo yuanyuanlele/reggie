@@ -1,14 +1,14 @@
 package com.le.reggie.controller;
 
-import com.itheima.reggie.common.R;
-import com.itheima.reggie.entity.Orders;
-import com.itheima.reggie.service.OrderService;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.le.reggie.common.R;
+import com.le.reggie.entity.Orders;
+import com.le.reggie.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 订单
@@ -31,5 +31,15 @@ public class OrderController {
         log.info("订单数据：{}",orders);
         orderService.submit(orders);
         return R.success("下单成功");
+    }
+
+    @GetMapping("/userPage")
+    public R<Page> page(int page,int pageSize){
+        log.info("page={},pageSize={}",page,pageSize);
+        Page pageInfo =new Page<>(page,pageSize);
+        LambdaQueryWrapper<Orders> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Orders::getOrderTime);
+        orderService.page(pageInfo,queryWrapper);
+        return R.success(pageInfo);
     }
 }

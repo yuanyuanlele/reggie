@@ -1,7 +1,7 @@
 package com.le.reggie.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.itheima.reggie.entity.Orders;
+import com.le.reggie.entity.Orders;
 
 public interface OrderService extends IService<Orders> {
 

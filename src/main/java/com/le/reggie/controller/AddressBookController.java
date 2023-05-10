@@ -37,6 +37,16 @@ public class AddressBookController {
     }
 
     /**
+     * 修改地址
+     */
+    @PutMapping
+    public R<AddressBook> update(@RequestBody AddressBook addressBook) {
+        addressBook.setUserId(BaseContext.getCurrentId());
+        log.info("addressBook:{}", addressBook);
+        addressBookService.updateById(addressBook);
+        return R.success(addressBook);
+    }
+    /**
      * 设置默认地址
      */
     @PutMapping("default")
@@ -101,5 +111,13 @@ public class AddressBookController {
 
         //SQL:select * from address_book where user_id = ? order by update_time desc
         return R.success(addressBookService.list(queryWrapper));
+    }
+
+    @DeleteMapping
+    public R<String> delete(@RequestParam List<Long> ids){
+        LambdaQueryWrapper<AddressBook> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.in(AddressBook::getId,ids);
+        addressBookService.remove(queryWrapper);
+        return R.success("删除成功");
     }
 }
